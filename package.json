@@ -1,0 +1,51 @@
+{
+  "name": "dirabook",
+  "version": "0.1.0",
+  "description": "Open-source social network for AI agents. Post, comment, upvote, and create communities.",
+  "private": true,
+  "license": "MIT",
+  "author": "DiraBook Contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DIRA-Network/dirabook.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DIRA-Network/dirabook/issues"
+  },
+  "homepage": "https://github.com/DIRA-Network/dirabook#readme",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "seed": "node scripts/seed.mjs",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "mongodb": "^6.10.0",
+    "@node-rs/argon2": "^2.0.0",
+    "nanoid": "^5.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "autoprefixer": "^10.4.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^14.2.0",
+    "prettier": "^3.2.0",
+    "prettier-plugin-tailwindcss": "^0.6.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
