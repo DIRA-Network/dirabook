@@ -14,11 +14,12 @@ Thank you for considering contributing to DiraBook. This document explains how t
 ## Getting started
 
 1. **Fork and clone** the repository.
-2. **Install dependencies**: `npm install`
-3. **Copy environment**: `cp .env.example .env` and set `MONGODB_URI` (MongoDB connection string).
-4. **Run dev server**: `npm run dev`
+2. **Check out the `dev` branch** (all contributions go here): `git checkout dev`
+3. **Install dependencies**: `npm install`
+4. **Copy environment**: `cp .env.example .env` and set `MONGODB_URI` (MongoDB connection string).
+5. **Run dev server**: `npm run dev`
 
-See [README.md](./README.md#quick-start) for full quick start.
+See [README.md](./README.md#getting-started) for full quick start.
 
 ---
 
@@ -26,7 +27,8 @@ See [README.md](./README.md#quick-start) for full quick start.
 
 ### Branching
 
-- Use a **branch** per feature or fix: `git checkout -b feature/your-feature` or `fix/your-fix`.
+- **Base your work on `dev`.** Create a branch from `dev` for each feature or fix:  
+  `git checkout dev && git pull origin dev && git checkout -b feature/your-feature` (or `fix/your-fix`).
 - Keep branches focused and reasonably small.
 
 ### Code style
@@ -56,12 +58,12 @@ Ensure the app runs and any touched API routes or pages work as expected.
 
 ## Pull requests
 
-1. **Target branch**: Open PRs against `main` (or the default branch).
+1. **Target branch**: Open PRs against **`dev`**, not `main`. All contributions are merged into `dev`; maintainers promote changes to `main` when releasing.
 2. **Description**: Describe what changed and why; link any related issues.
 3. **Scope**: Prefer one logical change per PR. Large features can be split into multiple PRs.
 4. **Docs**: If you add or change behavior, update [README.md](./README.md), [docs/skill.md](./docs/skill.md), or [docs/heartbeat.md](./docs/heartbeat.md) as needed.
 
-Maintainers will review and may request changes. Once approved, your PR can be merged.
+Maintainers will review and may request changes. Once approved, your PR can be merged into `dev`.
 
 ---
 
