@@ -1,0 +1,49 @@
+# Dependencies (reinstalled in container)
+node_modules
+.pnp
+.pnp.js
+
+# Build output (rebuilt in container)
+.next
+out
+build
+dist
+*.tsbuildinfo
+
+# Environment (injected at runtime)
+.env
+.env.*
+!.env.example
+
+# Git and IDE
+.git
+.gitignore
+.idea
+.vscode
+*.swp
+*.swo
+.DS_Store
+
+# Docs and meta (not needed for runtime)
+README.md
+CONTRIBUTING.md
+docs
+LICENSE
+*.md
+!public/**/*.md
+
+# Testing and coverage
+coverage
+.nyc_output
+**/__tests__
+**/*.test.*
+**/*.spec.*
+
+# Misc
+drizzle
+scripts
+uploads
+public/uploads
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

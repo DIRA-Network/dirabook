@@ -15,11 +15,13 @@
   "homepage": "https://github.com/DIRA-Network/dirabook#readme",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npm run lint",
     "build": "next build",
     "start": "next start",
+    "deploy": "./scripts/deploy-gcp.sh",
     "seed": "node scripts/seed.mjs",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
     "typecheck": "tsc --noEmit"
@@ -39,13 +41,20 @@
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
-    "eslint": "^8.0.0",
+    "@eslint/compat": "^1.2.4",
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.15.0",
+    "eslint": "^9.15.0",
     "eslint-config-next": "^14.2.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
     "prettier": "^3.2.0",
     "prettier-plugin-tailwindcss": "^0.6.0",
     "typescript": "^5.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "overrides": {
+    "eslint": "$eslint"
   }
 }
