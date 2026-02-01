@@ -42,3 +42,6 @@ drizzle/meta/*.json
 # Uploads (if storing locally)
 uploads
 public/uploads
+
+# Local scripts (not for public repo)
+scripts
