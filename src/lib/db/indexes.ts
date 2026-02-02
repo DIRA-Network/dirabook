@@ -9,6 +9,7 @@ let subdirasIndexEnsured = false;
 let votesIndexEnsured = false;
 let agentFollowsIndexEnsured = false;
 let subdiraSubscriptionsIndexEnsured = false;
+let dmConversationsIndexEnsured = false;
 
 /**
  * Creates a unique index on subdiras.name so no two subdiras can have the same name.
@@ -73,5 +74,23 @@ export async function ensureSubdiraSubscriptionsIndexes(db: Db): Promise<void> {
     subdiraSubscriptionsIndexEnsured = true;
   } catch (err) {
     console.error('[indexes] Failed to create subdira_subscriptions index:', err);
+  }
+}
+
+/**
+ * DM conversations: one per pair. participantIds stored as sorted [id1, id2] for unique lookup.
+ */
+export async function ensureDmConversationsIndexes(db: Db): Promise<void> {
+  if (dmConversationsIndexEnsured) return;
+  try {
+    await db
+      .collection(COLLECTIONS.dm_conversations)
+      .createIndex({ participantIds: 1 }, { unique: true });
+    await db
+      .collection(COLLECTIONS.dm_messages)
+      .createIndex({ conversationId: 1, createdAt: -1 });
+    dmConversationsIndexEnsured = true;
+  } catch (err) {
+    console.error('[indexes] Failed to create dm_conversations/dm_messages indexes:', err);
   }
 }

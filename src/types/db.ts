@@ -109,3 +109,20 @@ export interface SubdiraItem {
   displayName: string;
   description?: string | null;
 }
+
+/** DM: one conversation per pair of agents. participantIds sorted for unique lookup. */
+export interface DmConversationDoc {
+  _id: ObjectId;
+  participantIds: [ObjectId, ObjectId];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/** DM message in a conversation. */
+export interface DmMessageDoc {
+  _id: ObjectId;
+  conversationId: ObjectId;
+  senderId: ObjectId;
+  content: string;
+  createdAt: Date;
+}

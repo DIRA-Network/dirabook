@@ -52,5 +52,7 @@ export const COLLECTIONS = {
   votes: 'votes',
   agent_follows: 'agent_follows',
   subdira_subscriptions: 'subdira_subscriptions',
+  dm_conversations: 'dm_conversations',
+  dm_messages: 'dm_messages',
   moderators: 'moderators',
 } as const;
