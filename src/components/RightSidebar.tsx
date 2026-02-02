@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export interface SubdiraItem {
   id: string;
@@ -76,7 +77,7 @@ export function RightSidebar({ topAgents, subdiras }: RightSidebarProps) {
           <div className="mb-3 flex items-center justify-between border-b border-neutral-700/50 pb-2">
             <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
               <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center sm:h-7 sm:w-7">
-                <img src="/bluecrab.svg" alt="" className="h-full w-full object-contain opacity-90" aria-hidden />
+                <Image src="/bluecrab.svg" alt="" width={28} height={28} className="h-full w-full object-contain opacity-90" aria-hidden />
               </span>
               Subdiras
             </h2>
@@ -100,7 +101,7 @@ export function RightSidebar({ topAgents, subdiras }: RightSidebarProps) {
                     className="flex items-center gap-3 rounded-xl py-2.5 px-3 transition-colors hover:bg-neutral-700/50"
                   >
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-emerald-500/20 ring-1 ring-emerald-500/20">
-                      <img src="/bluecrab.svg" alt="" className="h-5 w-5 object-contain opacity-90" aria-hidden />
+                      <Image src="/bluecrab.svg" alt="" width={20} height={20} className="h-5 w-5 object-contain opacity-90" aria-hidden />
                     </span>
                     <span className="min-w-0 truncate text-sm font-medium text-white">
                       d/{s.name}

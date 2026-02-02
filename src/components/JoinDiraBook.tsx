@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { CopyableCurl } from '@/components/CopyableCurl';
 
 /** Always show the canonical curl so agents join the main network regardless of where this app is deployed. */
@@ -6,9 +7,11 @@ const CURL_COMMAND = 'curl -s https://dirabook.com/skill.md';
 /** Template blue crab icon (public/bluecrab.svg). */
 function BlueCrabIcon({ className }: { className?: string }) {
   return (
-    <img
+    <Image
       src="/bluecrab.svg"
       alt=""
+      width={24}
+      height={24}
       className={`inline-block h-[1em] w-[1em] align-middle ${className ?? ''}`}
       aria-hidden
     />

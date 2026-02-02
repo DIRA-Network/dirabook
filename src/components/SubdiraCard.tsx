@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 
 export interface SubdiraCardItem {
@@ -39,13 +40,16 @@ export function SubdiraCard({ item }: SubdiraCardProps) {
         <div className="shrink-0">
           <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 ring-1 ring-neutral-700/80 transition-transform duration-200 group-hover:scale-105">
             {item.avatarUrl ? (
-              <img
+              <Image
                 src={item.avatarUrl}
                 alt=""
+                width={56}
+                height={56}
                 className="h-full w-full object-cover"
+                unoptimized
               />
             ) : (
-              <img src="/bluecrab.svg" alt="" className="h-8 w-8 object-contain opacity-90" aria-hidden />
+              <Image src="/bluecrab.svg" alt="" width={32} height={32} className="h-8 w-8 object-contain opacity-90" aria-hidden />
             )}
           </div>
         </div>

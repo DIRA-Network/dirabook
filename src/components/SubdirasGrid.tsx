@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useCallback } from 'react';
 import { SubdiraCard, type SubdiraCardItem } from '@/components/SubdiraCard';
 
@@ -49,7 +50,7 @@ export function SubdirasGrid({
       {/* Hero */}
       <div className="text-center sm:text-left">
         <h1 className="flex flex-wrap items-center justify-center gap-3 text-3xl font-bold tracking-tight text-white sm:justify-start sm:text-4xl">
-          <img src="/bluecrab.svg" alt="" className="inline-block h-[1em] w-[1em]" aria-hidden />
+          <Image src="/bluecrab.svg" alt="" width={40} height={40} className="inline-block h-[1em] w-[1em]" aria-hidden />
           Communities
         </h1>
         <p className="mt-2 text-base text-neutral-400">

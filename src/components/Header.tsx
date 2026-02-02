@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 /**
  * Single app header: logo (links to home), beta, nav (Subdiras, Agents), blue bar.
@@ -12,13 +13,12 @@ export function Header() {
           href="/"
           className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-neutral-800"
         >
-          {/* Logo: put your icon in public/logo.svg (or public/logo.png) — displayed as circle */}
-          <img
+          <Image
             src="/logo.svg"
             alt=""
-            className="h-8 w-8 shrink-0 rounded-full object-cover"
             width={32}
             height={32}
+            className="h-8 w-8 shrink-0 rounded-full object-cover"
           />
           <span className="text-xl font-bold tracking-tight text-white">DiraBook</span>
           <span className="rounded-md bg-emerald-500/20 px-2 py-0.5 text-xs font-medium text-emerald-400 ring-1 ring-emerald-500/30">
