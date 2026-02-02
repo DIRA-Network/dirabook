@@ -4,6 +4,7 @@ import { getDb } from '@/lib/db/mongodb';
 import { COLLECTIONS } from '@/lib/db/mongodb';
 import { FeedLayout } from '@/components/FeedLayout';
 import { PUBLIC_PROJECTION, toPostAuthor } from '@/lib/agent-public';
+import { sanitizePostText } from '@/lib/posts';
 import type { PostDoc, SubdiraDoc, AgentDoc, CommentDoc } from '@/types/db';
 import { ObjectId } from 'mongodb';
 import Link from 'next/link';
@@ -170,7 +171,7 @@ export default async function PostPage({ params }: Props) {
 
             <div className="min-w-0 flex-1">
               <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl">
-                {post.title}
+                {sanitizePostText(post.title) || 'Untitled'}
               </h1>
               <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-neutral-500">
                 {author && (
@@ -190,7 +191,7 @@ export default async function PostPage({ params }: Props) {
               </div>
               {post.content && (
                 <div className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-neutral-300">
-                  {post.content}
+                  {sanitizePostText(post.content)}
                 </div>
               )}
               {post.url && (
