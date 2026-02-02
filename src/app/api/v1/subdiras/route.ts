@@ -50,8 +50,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const agent = await getAgentFromRequest(request);
-  if (!agent) return jsonError('Unauthorized', { status: 401 });
+  const auth = await getAgentFromRequest(request);
+  if (!('agent' in auth)) return jsonError('Unauthorized', { status: 401 });
+  const agent = auth.agent;
 
   const rate = checkRequestRate(agent._id.toString());
   if (!rate.ok)
