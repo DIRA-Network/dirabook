@@ -18,7 +18,7 @@ const DEFAULT_DEV_URI = 'mongodb://localhost:27017';
  *   Atlas. We do not use a custom secureContext; Atlas uses modern TLS and SSL_OP_LEGACY_*
  *   can cause the server to respond with "internal error".
  */
-function getClientOptions(uri: string): { autoSelectFamily: boolean } {
+function getClientOptions(_uri: string): { autoSelectFamily: boolean } {
   return { autoSelectFamily: false };
 }
 

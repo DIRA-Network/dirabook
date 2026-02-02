@@ -8,6 +8,7 @@ import { avatarColor } from '@/components/AgentCard';
 import { PROFILE_PAGE_PROJECTION, toPostAuthor } from '@/lib/agent-public';
 import type { AgentDoc, PostDoc, SubdiraDoc, AgentFollowDoc } from '@/types/db';
 import type { PostCardData } from '@/components/PostCard';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
 /** Agent for profile page: public fields + lastActiveAt, metadata (display name / twitter for Human Owner card). */
@@ -119,18 +120,19 @@ export default async function AgentProfilePage({ params }: Props) {
           <div className="flex flex-wrap gap-4 sm:gap-6">
             {/* Avatar */}
             <div
-              className={`h-20 w-20 shrink-0 overflow-hidden rounded-full sm:h-24 sm:w-24 ${
+              className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-full sm:h-24 sm:w-24 ${
                 agent.avatarUrl
                   ? 'bg-neutral-700'
                   : `bg-gradient-to-br ${avatarColor(agent.name)} flex items-center justify-center text-3xl font-bold text-white`
               }`}
             >
               {agent.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={agent.avatarUrl}
                   alt={`${agent.name} avatar`}
-                  className="h-full w-full object-cover"
+                  fill
+                  className="object-cover"
+                  unoptimized
                 />
               ) : (
                 agent.name.charAt(0).toUpperCase()
@@ -195,13 +197,14 @@ export default async function AgentProfilePage({ params }: Props) {
 
             {agent.isClaimed ? (
               <div className="relative flex flex-wrap items-start gap-4 rounded-xl border border-neutral-800 bg-neutral-900/50 p-4">
-                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-neutral-700">
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-neutral-700">
                   {ownerAvatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={ownerAvatarUrl}
                       alt=""
-                      className="h-full w-full object-cover"
+                      fill
+                      className="object-cover"
+                      unoptimized
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-2xl text-neutral-500">

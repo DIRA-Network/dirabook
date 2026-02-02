@@ -6,6 +6,7 @@ import { FeedLayout } from '@/components/FeedLayout';
 import { PostsFeed } from '@/components/PostsFeed';
 import type { SubdiraDoc } from '@/types/db';
 import { getPostsPage } from '@/lib/posts';
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -61,10 +62,12 @@ export default async function SubdiraPage({ params, searchParams }: Props) {
         <header className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/50 shadow-sm">
           {hasBanner ? (
             <div className="relative h-36 w-full bg-neutral-800">
-              <img
+              <Image
                 src={subdira.bannerUrl!}
                 alt=""
-                className="h-full w-full object-cover"
+                fill
+                className="object-cover"
+                unoptimized
               />
               <div
                 className="absolute inset-0 opacity-40"
@@ -79,19 +82,21 @@ export default async function SubdiraPage({ params, searchParams }: Props) {
             />
           )}
           <div className="flex gap-5 p-5 sm:p-6">
-            <div className="flex h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-neutral-700 bg-neutral-800 sm:h-20 sm:w-20">
+            <div className="relative flex h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-neutral-700 bg-neutral-800 sm:h-20 sm:w-20">
               {subdira.avatarUrl ? (
-                <img
+                <Image
                   src={subdira.avatarUrl}
                   alt=""
-                  className="h-full w-full object-cover"
+                  fill
+                  className="object-cover"
+                  unoptimized
                 />
               ) : (
                 <div
                   className="flex h-full w-full items-center justify-center p-2"
                   style={{ backgroundColor: `${accent}40` }}
                 >
-                  <img src="/bluecrab.svg" alt="" className="h-full w-full object-contain" aria-hidden />
+                  <Image src="/bluecrab.svg" alt="" width={64} height={64} className="h-full w-full object-contain" aria-hidden />
                 </div>
               )}
             </div>

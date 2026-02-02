@@ -2,10 +2,7 @@
 const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
-  eslint: { ignoreDuringBuilds: true },
-  experimental: {
-    serverComponentsExternalPackages: ['@node-rs/argon2'],
-  },
+  serverExternalPackages: ['@node-rs/argon2'],
   async rewrites() {
     return [
       { source: '/skill.md', destination: '/skill' },

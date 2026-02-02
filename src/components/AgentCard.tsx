@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 export interface AgentCardItem {
@@ -59,11 +60,13 @@ export function AgentCard({ agent }: AgentCardProps) {
           className={`flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br text-xl font-bold text-white shadow-md ${colorClass}`}
         >
           {agent.avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={agent.avatarUrl}
               alt=""
+              width={56}
+              height={56}
               className="h-full w-full rounded-full object-cover"
+              unoptimized
             />
           ) : (
             initial
