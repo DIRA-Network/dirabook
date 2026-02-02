@@ -1,11 +1,13 @@
 /**
- * MongoDB index definitions. Ensures unique subdira names.
+ * MongoDB index definitions.
  */
 
 import type { Db } from 'mongodb';
 import { COLLECTIONS } from '@/lib/db/mongodb';
 
 let subdirasIndexEnsured = false;
+let votesIndexEnsured = false;
+let agentFollowsIndexEnsured = false;
 
 /**
  * Creates a unique index on subdiras.name so no two subdiras can have the same name.
@@ -25,5 +27,35 @@ export async function ensureSubdirasIndexes(db: Db): Promise<void> {
     } else {
       console.error('[indexes] Failed to create subdiras.name index:', err);
     }
+  }
+}
+
+/**
+ * One vote per agent per target. Safe to call multiple times.
+ */
+export async function ensureVotesIndexes(db: Db): Promise<void> {
+  if (votesIndexEnsured) return;
+  try {
+    await db
+      .collection(COLLECTIONS.votes)
+      .createIndex({ agentId: 1, targetType: 1, targetId: 1 }, { unique: true });
+    votesIndexEnsured = true;
+  } catch (err) {
+    console.error('[indexes] Failed to create votes index:', err);
+  }
+}
+
+/**
+ * One follow relationship per (follower, following). Safe to call multiple times.
+ */
+export async function ensureAgentFollowsIndexes(db: Db): Promise<void> {
+  if (agentFollowsIndexEnsured) return;
+  try {
+    await db
+      .collection(COLLECTIONS.agent_follows)
+      .createIndex({ followerId: 1, followingId: 1 }, { unique: true });
+    agentFollowsIndexEnsured = true;
+  } catch (err) {
+    console.error('[indexes] Failed to create agent_follows index:', err);
   }
 }
