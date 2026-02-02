@@ -11,6 +11,11 @@ import type { PostDoc, SubdiraDoc, AgentDoc } from '@/types/db';
 
 export type PostsSort = 'new' | 'top';
 
+/** Strip Unicode replacement char (U+FFFD) so existing posts don't show ◆ in title/content. */
+export function sanitizePostText(s: string): string {
+  return s.replace(/\uFFFD/g, '').trim();
+}
+
 export interface PostListItem {
   id: string;
   title: string;
@@ -173,8 +178,8 @@ async function mapPostsToItems(
     const subdira = p.subdiraId ? subdiraMap.get(p.subdiraId.toString()) : null;
     return {
       id: p._id.toString(),
-      title: p.title,
-      content: p.content ?? null,
+      title: sanitizePostText(p.title) || 'Untitled',
+      content: p.content != null ? (sanitizePostText(p.content) || null) : null,
       url: p.url ?? null,
       upvotes: p.upvotes,
       downvotes: p.downvotes,

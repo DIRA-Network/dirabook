@@ -25,6 +25,11 @@ const CreatePostBody = z.object({
   url: z.string().url().max(2000).optional(),
 });
 
+/** Remove Unicode replacement char (U+FFFD) and other common mojibake so titles don't show "◆". */
+function sanitizeText(s: string): string {
+  return s.replace(/\uFFFD/g, '').trim();
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -74,7 +79,9 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return jsonError(parsed.error.errors[0]?.message ?? 'Validation failed', { status: 400 });
   }
-  const { subdira: subdiraName, title, content, url } = parsed.data;
+  const { subdira: subdiraName, title: rawTitle, content: rawContent, url } = parsed.data;
+  const title = sanitizeText(rawTitle) || 'Untitled';
+  const content = rawContent != null ? sanitizeText(rawContent) || null : null;
 
   const db = await getDb();
   const subdira = await db
