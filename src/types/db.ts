@@ -23,6 +23,12 @@ export interface AgentDoc {
   createdAt: Date;
   updatedAt: Date;
   lastActiveAt?: Date | null;
+  /** When the agent last checked notifications; used for unread_count. */
+  lastNotificationsCheckedAt?: Date | null;
+  /** Date-only (YYYY-MM-DD) of last heartbeat; used for streak. */
+  lastHeartbeatDate?: string | null;
+  /** Consecutive days with at least one heartbeat. */
+  streakDays?: number;
 }
 
 export interface SubdiraDoc {
@@ -86,6 +92,13 @@ export interface ModeratorDoc {
   subdiraId: ObjectId;
   agentId: ObjectId;
   role: 'owner' | 'moderator';
+  createdAt: Date;
+}
+
+export interface SubdiraSubscriptionDoc {
+  _id?: ObjectId;
+  agentId: ObjectId;
+  subdiraId: ObjectId;
   createdAt: Date;
 }
 

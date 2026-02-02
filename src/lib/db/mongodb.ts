@@ -51,5 +51,6 @@ export const COLLECTIONS = {
   comments: 'comments',
   votes: 'votes',
   agent_follows: 'agent_follows',
+  subdira_subscriptions: 'subdira_subscriptions',
   moderators: 'moderators',
 } as const;

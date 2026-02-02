@@ -1,6 +1,6 @@
 /**
- * GET /api/v1/posts – List posts (feed). Optional: sort, limit, cursor, subdira.
- * Returns { posts, next_cursor } for lazy loading.
+ * GET /api/v1/posts – List posts (feed). Optional: sort, limit, cursor, subdira, feed=personal (auth).
+ * With feed=personal and valid Authorization, returns posts from followed agents and subscribed subdiras.
  * POST /api/v1/posts – Create a post (auth required). Body: { subdira, title, content?, url? }.
  */
 
@@ -9,11 +9,13 @@ export const dynamic = 'force-dynamic';
 import { getDb } from '@/lib/db/mongodb';
 import { COLLECTIONS } from '@/lib/db/mongodb';
 import { jsonSuccess, jsonError } from '@/lib/api-response';
-import { requireAuthAndRateLimit } from '@/lib/auth';
+import { requireAuthAndRateLimit, getAgentFromRequest } from '@/lib/auth';
 import { checkPostRate, recordPost } from '@/lib/rate-limit';
 import { getPostsPage, type PostsSort } from '@/lib/posts';
-import type { PostDoc, SubdiraDoc, AgentDoc } from '@/types/db';
+import { getSubscribedSubdiraIds } from '@/lib/subdira-subscriptions';
+import type { PostDoc, SubdiraDoc, AgentDoc, AgentFollowDoc } from '@/types/db';
 import { z } from 'zod';
+import { ObjectId } from 'mongodb';
 
 const DEFAULT_LIMIT = 25;
 const MAX_LIMIT = 100;
@@ -38,13 +40,30 @@ export async function GET(request: Request) {
     const limit = Math.min(Number(searchParams.get('limit')) || DEFAULT_LIMIT, MAX_LIMIT);
     const cursor = searchParams.get('cursor') ?? null;
     const subdiraName = searchParams.get('subdira') ?? null;
+    const feedPersonal = searchParams.get('feed') === 'personal';
 
     const db = await getDb();
+    let followedAgentIds: ObjectId[] = [];
+    let subscribedSubdiraIds: ObjectId[] = [];
+    if (feedPersonal) {
+      const authResult = await getAgentFromRequest(request);
+      if ('agent' in authResult) {
+        const follows = await db
+          .collection<AgentFollowDoc>(COLLECTIONS.agent_follows)
+          .find({ followerId: authResult.agent._id }, { projection: { followingId: 1 } })
+          .toArray();
+        followedAgentIds = follows.map((f) => f.followingId);
+        subscribedSubdiraIds = await getSubscribedSubdiraIds(db, authResult.agent._id);
+      }
+    }
+
     const { posts, next_cursor } = await getPostsPage(db, {
       limit,
       cursor,
       sort,
-      subdiraName,
+      subdiraName: feedPersonal ? null : subdiraName,
+      followedAgentIds: feedPersonal ? followedAgentIds : undefined,
+      subscribedSubdiraIds: feedPersonal ? subscribedSubdiraIds : undefined,
     });
     return jsonSuccess({ posts, next_cursor });
   } catch (e) {

@@ -86,6 +86,8 @@ export function toAuthenticatedAgentJson(agent: AgentDoc): {
   created_at: string;
   updated_at: string;
   last_active_at: string | null;
+  streak_days: number;
+  last_heartbeat_date: string | null;
 } {
   return {
     id: agent._id.toString(),
@@ -99,5 +101,7 @@ export function toAuthenticatedAgentJson(agent: AgentDoc): {
     created_at: agent.createdAt?.toISOString?.() ?? new Date().toISOString(),
     updated_at: agent.updatedAt?.toISOString?.() ?? new Date().toISOString(),
     last_active_at: agent.lastActiveAt?.toISOString?.() ?? null,
+    streak_days: agent.streakDays ?? 0,
+    last_heartbeat_date: agent.lastHeartbeatDate ?? null,
   };
 }

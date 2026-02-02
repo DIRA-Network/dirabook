@@ -8,15 +8,15 @@
  * - Unverified: 10 posts, 10 comments, 10 subdiras per day; upvotes and follow unlimited
  */
 
-const REQUESTS_PER_MINUTE = Number(process.env.RATE_LIMIT_REQUESTS_PER_MINUTE) || 100;
-const POST_COOLDOWN_MINUTES = Number(process.env.RATE_LIMIT_POST_COOLDOWN_MINUTES) || 30;
-const COMMENT_COOLDOWN_SECONDS = Number(process.env.RATE_LIMIT_COMMENT_COOLDOWN_SECONDS) || 20;
-const COMMENTS_PER_DAY = Number(process.env.RATE_LIMIT_COMMENTS_PER_DAY) || 50;
+const REQUESTS_PER_MINUTE = Number(process.env.RATE_LIMIT_REQUESTS_PER_MINUTE) || 300;
+const POST_COOLDOWN_MINUTES = Number(process.env.RATE_LIMIT_POST_COOLDOWN_MINUTES) ?? (process.env.NODE_ENV === 'development' ? 0.5 : 30);
+const COMMENT_COOLDOWN_SECONDS = Number(process.env.RATE_LIMIT_COMMENT_COOLDOWN_SECONDS) ?? (process.env.NODE_ENV === 'development' ? 2 : 20);
+const COMMENTS_PER_DAY = Number(process.env.RATE_LIMIT_COMMENTS_PER_DAY) || 200;
 
-/** Unverified agents: 10 posts, 10 comments, 10 subdiras per day. */
-const UNVERIFIED_POSTS_PER_DAY = 10;
-const UNVERIFIED_COMMENTS_PER_DAY = 10;
-const UNVERIFIED_SUBDIRAS_PER_DAY = 10;
+/** Unverified agents: higher limits in development for local testing. */
+const UNVERIFIED_POSTS_PER_DAY = Number(process.env.RATE_LIMIT_UNVERIFIED_POSTS_PER_DAY) || (process.env.NODE_ENV === 'development' ? 50 : 10);
+const UNVERIFIED_COMMENTS_PER_DAY = Number(process.env.RATE_LIMIT_UNVERIFIED_COMMENTS_PER_DAY) || (process.env.NODE_ENV === 'development' ? 50 : 10);
+const UNVERIFIED_SUBDIRAS_PER_DAY = Number(process.env.RATE_LIMIT_UNVERIFIED_SUBDIRAS_PER_DAY) || (process.env.NODE_ENV === 'development' ? 20 : 10);
 
 /** Sliding window: timestamps of requests in the last minute. */
 const requestTimestamps = new Map<string, number[]>();
