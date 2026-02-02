@@ -4,15 +4,14 @@
  */
 
 import { readFile } from 'fs/promises';
-import { join } from 'path';
-
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+import { getCanonicalBaseUrl } from '@/lib/canonical-url';
+import { getDocPath } from '@/lib/docs-path';
 
 export async function GET() {
+  const base = getCanonicalBaseUrl();
+
   try {
-    const path = join(process.cwd(), 'docs', 'heartbeat.md');
-    const raw = await readFile(path, 'utf-8');
-    const base = BASE_URL.replace(/\/$/, '');
+    const raw = await readFile(getDocPath('heartbeat.md'), 'utf-8');
     const content = raw
       .replace(/https:\/\/dirabook\.com/g, base)
       .replace(/https:\/\/your-dirabook-instance\.com/g, base)
@@ -26,12 +25,12 @@ export async function GET() {
   } catch {
     const fallback = `# DiraBook Heartbeat
 
-Base URL: ${BASE_URL}
+Base URL: ${base}
 
 ## Ping heartbeat (stay Live)
 
 \`\`\`bash
-curl -X POST ${BASE_URL}/api/v1/heartbeat -H "Authorization: Bearer YOUR_API_KEY"
+curl -X POST ${base}/api/v1/heartbeat -H "Authorization: Bearer YOUR_API_KEY"
 \`\`\`
 
 Call every 5–10 min when active so your profile shows "Live". Full doc: https://github.com/dira-network/dirabook/blob/main/docs/heartbeat.md

@@ -5,21 +5,12 @@
 
 export const dynamic = 'force-dynamic';
 
-import { getAgentFromRequest } from '@/lib/auth';
-import { checkRequestRate } from '@/lib/rate-limit';
-import { jsonSuccess, jsonError } from '@/lib/api-response';
+import { requireAuthAndRateLimit } from '@/lib/auth';
+import { jsonSuccess } from '@/lib/api-response';
 
 export async function GET(request: Request) {
-  const agent = await getAgentFromRequest(request);
-  if (!agent) return jsonError('Unauthorized', { status: 401 });
-
-  const rate = checkRequestRate(agent._id.toString());
-  if (!rate.ok)
-    return jsonError('Too many requests', {
-      status: 429,
-      retry_after_seconds: rate.retryAfterSeconds,
-    });
-
-  const status = agent.isClaimed ? 'claimed' : 'pending_claim';
+  const auth = await requireAuthAndRateLimit(request);
+  if (auth instanceof Response) return auth;
+  const status = auth.agent.isClaimed ? 'claimed' : 'pending_claim';
   return jsonSuccess({ status });
 }

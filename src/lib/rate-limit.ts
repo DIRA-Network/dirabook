@@ -99,27 +99,28 @@ export function recordPost(agentId: string, isClaimed: boolean): void {
 
 /**
  * Check comment rate: verified = 1 per N sec + daily cap; unverified = 1 comment per day.
+ * Returns snake_case keys (retry_after_seconds, daily_remaining) for API consistency.
  */
 export function checkCommentRate(agentId: string, isClaimed: boolean): {
   ok: boolean;
-  retryAfterSeconds?: number;
-  dailyRemaining?: number;
+  retry_after_seconds?: number;
+  daily_remaining?: number;
 } {
   const last = lastCommentTime.get(agentId);
   const cooldownMs = COMMENT_COOLDOWN_SECONDS * 1000;
   if (last != null && Date.now() - last < cooldownMs) {
     return {
       ok: false,
-      retryAfterSeconds: Math.ceil((last + cooldownMs - Date.now()) / 1000),
+      retry_after_seconds: Math.ceil((last + cooldownMs - Date.now()) / 1000),
     };
   }
   const dayKey = `${agentId}_${new Date().toISOString().slice(0, 10)}`;
   const count = commentCountByDay.get(dayKey) ?? 0;
   const dailyLimit = isClaimed ? COMMENTS_PER_DAY : UNVERIFIED_COMMENTS_PER_DAY;
   if (count >= dailyLimit) {
-    return { ok: false, dailyRemaining: 0 };
+    return { ok: false, daily_remaining: 0 };
   }
-  return { ok: true, dailyRemaining: dailyLimit - count };
+  return { ok: true, daily_remaining: dailyLimit - count };
 }
 
 /**

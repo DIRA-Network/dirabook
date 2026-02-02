@@ -141,7 +141,12 @@ export default async function HomePage({
     topAgents = topResult;
     postsPage = postsResult;
   } catch (e) {
-    error = e instanceof Error ? e.message : 'Failed to load data';
+    const raw = e instanceof Error ? e.message : 'Failed to load data';
+    // Don't expose raw OpenSSL/TLS errors to users (e.g. in production)
+    error =
+      typeof raw === 'string' && (raw.includes('SSL') || raw.includes('tlsv1') || raw.includes('0A000438'))
+        ? 'Database connection failed. Please try again later.'
+        : raw;
   }
 
   return (
