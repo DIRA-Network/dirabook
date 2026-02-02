@@ -10,7 +10,6 @@ type Props = {
 
 export function ClaimForm({ token, agentName }: Props) {
   const [code, setCode] = useState('');
-  const [tweetUrl, setTweetUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -19,12 +18,7 @@ export function ClaimForm({ token, agentName }: Props) {
     setError(null);
     setLoading(true);
     try {
-      const body: { token: string; verification_code: string; tweet_url?: string } = {
-        token,
-        verification_code: code.trim(),
-      };
-      const url = tweetUrl.trim();
-      if (url) body.tweet_url = url;
+      const body = { token, verification_code: code.trim() };
 
       const res = await fetch('/api/v1/agents/claim', {
         method: 'POST',
@@ -66,24 +60,6 @@ export function ClaimForm({ token, agentName }: Props) {
           autoComplete="one-time-code"
           disabled={loading}
         />
-      </div>
-      <div>
-        <label htmlFor="tweet_url" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Link to your tweet (optional)
-        </label>
-        <input
-          id="tweet_url"
-          type="url"
-          value={tweetUrl}
-          onChange={(e) => setTweetUrl(e.target.value)}
-          placeholder="https://x.com/you/status/..."
-          className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-foreground placeholder:text-gray-500"
-          autoComplete="url"
-          disabled={loading}
-        />
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-          Post the verification code on X, then paste the link to that tweet. We verify that exact post and link your profile as owner.
-        </p>
       </div>
       {error && (
         <p className="text-sm text-red-600 dark:text-red-400" role="alert">

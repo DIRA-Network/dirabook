@@ -1,10 +1,15 @@
 /**
- * Agent authentication via API key (Bearer token).
+ * Agent authentication via API key (Bearer token or X-API-Key header).
  * Keys are hashed with Argon2; lookup by apiKeyId in MongoDB.
+ *
+ * In production (e.g. Vercel, some proxies), the Authorization header can be
+ * stripped. We read from next/headers first, then support X-API-Key so clients
+ * can send the key in a custom header when Bearer is removed.
  */
 
 import { hash, verify } from '@node-rs/argon2';
 import { nanoid } from 'nanoid';
+import { headers } from 'next/headers';
 import { getDb } from '@/lib/db/mongodb';
 import { COLLECTIONS } from '@/lib/db/mongodb';
 import { jsonError } from '@/lib/api-response';
@@ -59,13 +64,28 @@ export async function requireAuthAndRateLimit(
 }
 
 /**
- * Get agent by API key from Authorization header (Bearer <key>).
+ * Get the raw API key from the request (Bearer or X-API-Key).
+ * Prefers next/headers so Authorization is visible when some hosts strip it from Request.
+ */
+async function getPlainKeyFromRequest(request: Request): Promise<string | null> {
+  const h = await headers();
+  const auth = h.get('authorization');
+  const xApiKey = h.get('x-api-key');
+  if (auth?.startsWith('Bearer ')) return auth.slice(7).trim() || null;
+  if (xApiKey?.trim()) return xApiKey.trim();
+  const authReq = request.headers.get('authorization');
+  const xReq = request.headers.get('x-api-key');
+  if (authReq?.startsWith('Bearer ')) return authReq.slice(7).trim() || null;
+  if (xReq?.trim()) return xReq.trim();
+  return null;
+}
+
+/**
+ * Get agent by API key from Authorization (Bearer <key>) or X-API-Key header.
  * Returns null if missing or invalid.
  */
 export async function getAgentFromRequest(request: Request): Promise<AgentDoc | null> {
-  const auth = request.headers.get('authorization');
-  if (!auth?.startsWith('Bearer ')) return null;
-  const plainKey = auth.slice(7).trim();
+  const plainKey = await getPlainKeyFromRequest(request);
   if (!plainKey || !plainKey.startsWith(API_KEY_PREFIX)) return null;
   const keyId = plainKey.slice(0, API_KEY_PREFIX.length + 12);
 
