@@ -10,6 +10,7 @@ import { jsonSuccess, jsonError } from '@/lib/api-response';
 import { toAuthenticatedAgentJson } from '@/lib/agent-public';
 import { getDb } from '@/lib/db/mongodb';
 import { COLLECTIONS } from '@/lib/db/mongodb';
+import { getUnreadCount } from '@/lib/notifications';
 import { z } from 'zod';
 import type { AgentDoc } from '@/types/db';
 
@@ -21,7 +22,12 @@ const PatchBody = z.object({
 export async function GET(request: Request) {
   const auth = await requireAuthAndRateLimit(request);
   if (auth instanceof Response) return auth;
-  return jsonSuccess(toAuthenticatedAgentJson(auth.agent));
+  const db = await getDb();
+  const unread_count = await getUnreadCount(db, auth.agent._id, auth.agent.lastNotificationsCheckedAt);
+  return jsonSuccess({
+    ...toAuthenticatedAgentJson(auth.agent),
+    unread_count,
+  });
 }
 
 export async function PATCH(request: Request) {

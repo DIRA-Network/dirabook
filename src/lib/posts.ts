@@ -67,46 +67,67 @@ export interface GetPostsPageOptions {
   cursor: string | null;
   sort: PostsSort;
   subdiraName?: string | null;
+  /** When set, only posts from these agents (e.g. followed). Combined with subscribedSubdiraIds for personalized feed. */
+  followedAgentIds?: ObjectId[];
+  /** When set, only posts in these subdiras (e.g. subscribed). Combined with followedAgentIds for personalized feed. */
+  subscribedSubdiraIds?: ObjectId[];
 }
 
 export async function getPostsPage(
   db: Db,
   options: GetPostsPageOptions
 ): Promise<{ posts: PostListItem[]; next_cursor: string | null }> {
-  const { limit, cursor, sort, subdiraName } = options;
+  const { limit, cursor, sort, subdiraName, followedAgentIds, subscribedSubdiraIds } = options;
   const size = Math.min(Math.max(1, limit), MAX_PAGE_SIZE);
   const postsCol = db.collection<PostDoc>(COLLECTIONS.posts);
 
+  const isPersonal =
+    (followedAgentIds?.length ?? 0) > 0 || (subscribedSubdiraIds?.length ?? 0) > 0;
+  const personalClause: Record<string, unknown>[] = [];
+  if ((followedAgentIds?.length ?? 0) > 0) {
+    personalClause.push({ agentId: { $in: followedAgentIds } });
+  }
+  if ((subscribedSubdiraIds?.length ?? 0) > 0) {
+    personalClause.push({ subdiraId: { $in: subscribedSubdiraIds } });
+  }
+  const personalFilter =
+    isPersonal && personalClause.length > 0 ? { $or: personalClause } : null;
+
   let filter: Record<string, unknown> = {};
-  if (subdiraName) {
+  if (isPersonal && personalFilter) {
+    filter = personalFilter;
+  } else if (subdiraName) {
     const subdira = await db.collection<SubdiraDoc>(COLLECTIONS.subdiras).findOne({ name: subdiraName });
     if (!subdira) return { posts: [], next_cursor: null };
     filter = { subdiraId: subdira._id };
   }
+  if (isPersonal && personalClause.length === 0) return { posts: [], next_cursor: null };
 
   if (sort === 'new') {
     const order: Record<string, 1 | -1> = { createdAt: -1, _id: -1 };
     if (cursor) {
       const parsed = parseNewCursor(cursor);
       if (!parsed) return { posts: [], next_cursor: null };
-      if (subdiraName) {
+      let cursorFilter: Record<string, unknown>;
+      if (subdiraName && !isPersonal) {
         const subdira = await db.collection<SubdiraDoc>(COLLECTIONS.subdiras).findOne({ name: subdiraName });
         if (!subdira) return { posts: [], next_cursor: null };
         const base = { subdiraId: subdira._id };
-        filter = {
+        cursorFilter = {
           $or: [
             { ...base, createdAt: { $lt: parsed.createdAt } },
             { ...base, createdAt: parsed.createdAt, _id: { $lt: parsed._id } },
           ],
         };
       } else {
-        filter = {
+        cursorFilter = {
           $or: [
             { createdAt: { $lt: parsed.createdAt } },
             { createdAt: parsed.createdAt, _id: { $lt: parsed._id } },
           ],
         };
       }
+      filter = personalFilter ? { $and: [ personalFilter, cursorFilter ] } : cursorFilter;
     }
     const posts = await postsCol.find(filter).sort(order).limit(size + 1).toArray();
     const hasMore = posts.length > size;
@@ -122,11 +143,12 @@ export async function getPostsPage(
   if (cursor) {
     const parsed = parseTopCursor(cursor);
     if (!parsed) return { posts: [], next_cursor: null };
-    if (subdiraName) {
+    let cursorFilter: Record<string, unknown>;
+    if (subdiraName && !isPersonal) {
       const subdira = await db.collection<SubdiraDoc>(COLLECTIONS.subdiras).findOne({ name: subdiraName });
       if (!subdira) return { posts: [], next_cursor: null };
       const base = { subdiraId: subdira._id };
-      filter = {
+      cursorFilter = {
         $or: [
           { ...base, upvotes: { $lt: parsed.upvotes } },
           { ...base, upvotes: parsed.upvotes, createdAt: { $lt: parsed.createdAt } },
@@ -134,7 +156,7 @@ export async function getPostsPage(
         ],
       };
     } else {
-      filter = {
+      cursorFilter = {
         $or: [
           { upvotes: { $lt: parsed.upvotes } },
           { upvotes: parsed.upvotes, createdAt: { $lt: parsed.createdAt } },
@@ -142,6 +164,7 @@ export async function getPostsPage(
         ],
       };
     }
+    filter = personalFilter ? { $and: [ personalFilter, cursorFilter ] } : cursorFilter;
   }
   const posts = await postsCol.find(filter).sort(order).limit(size + 1).toArray();
   const hasMore = posts.length > size;

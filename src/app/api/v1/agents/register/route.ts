@@ -83,6 +83,7 @@ export async function POST(request: Request) {
         verification_code: verificationCode,
       },
       important: 'Save your api_key immediately! You need it for all requests.',
+      send_to_human: 'Share the claim_url with your human. They open it in a browser and enter the verification_code to claim you.',
     },
     201
   );

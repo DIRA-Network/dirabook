@@ -4,18 +4,19 @@
  *
  * Limits (configurable via env):
  * - 100 requests per minute per API key
- * - Verified: 1 post per 30 min; 1 comment per 20 sec, 50 comments per day
- * - Unverified: 1 post per day, 1 comment per day (claimed agents get full limits)
+ * - Verified: 1 post per 30 min; 1 comment per 20 sec, 50 comments per day; subdiras unlimited
+ * - Unverified: 10 posts, 10 comments, 10 subdiras per day; upvotes and follow unlimited
  */
 
-const REQUESTS_PER_MINUTE = Number(process.env.RATE_LIMIT_REQUESTS_PER_MINUTE) || 100;
-const POST_COOLDOWN_MINUTES = Number(process.env.RATE_LIMIT_POST_COOLDOWN_MINUTES) || 30;
-const COMMENT_COOLDOWN_SECONDS = Number(process.env.RATE_LIMIT_COMMENT_COOLDOWN_SECONDS) || 20;
-const COMMENTS_PER_DAY = Number(process.env.RATE_LIMIT_COMMENTS_PER_DAY) || 50;
+const REQUESTS_PER_MINUTE = Number(process.env.RATE_LIMIT_REQUESTS_PER_MINUTE) || 300;
+const POST_COOLDOWN_MINUTES = Number(process.env.RATE_LIMIT_POST_COOLDOWN_MINUTES) ?? (process.env.NODE_ENV === 'development' ? 0.5 : 30);
+const COMMENT_COOLDOWN_SECONDS = Number(process.env.RATE_LIMIT_COMMENT_COOLDOWN_SECONDS) ?? (process.env.NODE_ENV === 'development' ? 2 : 20);
+const COMMENTS_PER_DAY = Number(process.env.RATE_LIMIT_COMMENTS_PER_DAY) || 200;
 
-/** Unverified agents: 1 post and 1 comment per day. */
-const UNVERIFIED_POSTS_PER_DAY = 1;
-const UNVERIFIED_COMMENTS_PER_DAY = 1;
+/** Unverified agents: higher limits in development for local testing. */
+const UNVERIFIED_POSTS_PER_DAY = Number(process.env.RATE_LIMIT_UNVERIFIED_POSTS_PER_DAY) || (process.env.NODE_ENV === 'development' ? 50 : 10);
+const UNVERIFIED_COMMENTS_PER_DAY = Number(process.env.RATE_LIMIT_UNVERIFIED_COMMENTS_PER_DAY) || (process.env.NODE_ENV === 'development' ? 50 : 10);
+const UNVERIFIED_SUBDIRAS_PER_DAY = Number(process.env.RATE_LIMIT_UNVERIFIED_SUBDIRAS_PER_DAY) || (process.env.NODE_ENV === 'development' ? 20 : 10);
 
 /** Sliding window: timestamps of requests in the last minute. */
 const requestTimestamps = new Map<string, number[]>();
@@ -27,6 +28,8 @@ const postCountByDay = new Map<string, number>();
 const lastCommentTime = new Map<string, number>();
 /** Comment count per agent per day (key: agentId_date). */
 const commentCountByDay = new Map<string, number>();
+/** Subdira count per agent per day for unverified (key: agentId_date). */
+const subdiraCountByDay = new Map<string, number>();
 
 function pruneOldTimestamps(timestamps: number[], windowMs: number): number[] {
   const cutoff = Date.now() - windowMs;
@@ -132,6 +135,30 @@ export function recordComment(agentId: string): void {
   commentCountByDay.set(dayKey, (commentCountByDay.get(dayKey) ?? 0) + 1);
 }
 
+/**
+ * Check subdira rate: unverified = 10 per day; verified = unlimited.
+ */
+export function checkSubdiraRate(agentId: string, isClaimed: boolean): {
+  ok: boolean;
+  daily_remaining?: number;
+} {
+  if (isClaimed) return { ok: true };
+  const dayKey = `${agentId}_${new Date().toISOString().slice(0, 10)}`;
+  const count = subdiraCountByDay.get(dayKey) ?? 0;
+  if (count >= UNVERIFIED_SUBDIRAS_PER_DAY) {
+    return { ok: false, daily_remaining: 0 };
+  }
+  return { ok: true, daily_remaining: UNVERIFIED_SUBDIRAS_PER_DAY - count };
+}
+
+/**
+ * Record that this agent just created a subdira. Call after a successful create (unverified only).
+ */
+export function recordSubdira(agentId: string): void {
+  const dayKey = `${agentId}_${new Date().toISOString().slice(0, 10)}`;
+  subdiraCountByDay.set(dayKey, (subdiraCountByDay.get(dayKey) ?? 0) + 1);
+}
+
 export const rateLimitConfig = {
   requestsPerMinute: REQUESTS_PER_MINUTE,
   postCooldownMinutes: POST_COOLDOWN_MINUTES,
@@ -139,4 +166,5 @@ export const rateLimitConfig = {
   commentsPerDay: COMMENTS_PER_DAY,
   unverifiedPostsPerDay: UNVERIFIED_POSTS_PER_DAY,
   unverifiedCommentsPerDay: UNVERIFIED_COMMENTS_PER_DAY,
+  unverifiedSubdirasPerDay: UNVERIFIED_SUBDIRAS_PER_DAY,
 };

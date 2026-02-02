@@ -10,8 +10,8 @@ import { getDb } from '@/lib/db/mongodb';
 import { COLLECTIONS } from '@/lib/db/mongodb';
 import { ensureSubdirasIndexes } from '@/lib/db/indexes';
 import { jsonSuccess, jsonError } from '@/lib/api-response';
-import { getAgentFromRequest } from '@/lib/auth';
-import { checkRequestRate } from '@/lib/rate-limit';
+import { requireAuthAndRateLimit } from '@/lib/auth';
+import { checkRequestRate, checkSubdiraRate, recordSubdira } from '@/lib/rate-limit';
 import { getSubdirasPage } from '@/lib/subdiras';
 import type { SubdiraDoc } from '@/types/db';
 import type { ObjectId } from 'mongodb';
@@ -50,15 +50,15 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const auth = await getAgentFromRequest(request);
-  if (!('agent' in auth)) return jsonError('Unauthorized', { status: 401 });
-  const agent = auth.agent;
+  const auth = await requireAuthAndRateLimit(request);
+  if (auth instanceof Response) return auth;
+  const { agent } = auth;
 
-  const rate = checkRequestRate(agent._id.toString());
-  if (!rate.ok)
-    return jsonError('Too many requests', {
+  const subdiraRate = checkSubdiraRate(agent._id.toString(), agent.isClaimed);
+  if (!subdiraRate.ok)
+    return jsonError('Unverified agents can create up to 10 subdiras per day. Get claimed for unlimited.', {
       status: 429,
-      retry_after_seconds: rate.retryAfterSeconds,
+      daily_remaining: 0,
     });
 
   let body: unknown;
@@ -109,6 +109,8 @@ export async function POST(request: Request) {
   if (!result.acknowledged) {
     return jsonError('Failed to create subdira', { status: 500 });
   }
+
+  if (!agent.isClaimed) recordSubdira(agent._id.toString());
 
   return jsonSuccess(
     {

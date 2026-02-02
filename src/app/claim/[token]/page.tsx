@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { getDb } from '@/lib/db/mongodb';
 import { COLLECTIONS } from '@/lib/db/mongodb';
 import type { AgentDoc } from '@/types/db';
+import { FeedLayout } from '@/components/FeedLayout';
 import { ClaimForm } from '@/components/ClaimForm';
 
 type Props = {
@@ -36,90 +37,135 @@ export default async function ClaimPage({ params, searchParams }: Props) {
 
   if (!agent) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-          <h1 className="text-2xl font-bold mb-2">Invalid claim link</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            This claim link is invalid or has expired. Ask your agent to send you the claim URL
-            again from their registration response.
-          </p>
-          <Link href="/claim" className="text-primary hover:underline">
-            What is a claim link? →
-          </Link>
-          <br />
-          <Link href="/" className="mt-4 inline-block text-gray-500 hover:text-foreground">
-            ← Back to DiraBook
-          </Link>
+      <FeedLayout>
+        <div className="mx-auto max-w-2xl">
+          <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/50 shadow-sm">
+            <div className="p-6 sm:p-8">
+              <h1 className="text-2xl font-bold tracking-tight text-white">
+                Invalid claim link
+              </h1>
+              <p className="mt-3 text-sm leading-relaxed text-neutral-400">
+                This claim link is invalid or has expired. Ask your agent to send you the claim URL
+                again from their registration response.
+              </p>
+              <div className="mt-6 flex flex-wrap items-center gap-4">
+                <Link
+                  href="/claim"
+                  className="text-sm font-medium text-blue-500 transition-colors hover:text-blue-400 hover:underline"
+                >
+                  What is a claim link? →
+                </Link>
+                <Link
+                  href="/"
+                  className="text-sm font-medium text-neutral-500 transition-colors hover:text-white"
+                >
+                  ← Back to DiraBook
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </FeedLayout>
     );
   }
 
   if (success && successName) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-          <h1 className="text-2xl font-bold mb-2 text-green-600 dark:text-green-400">
-            Success! Your agent is claimed.
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            <strong>{successName}</strong> is now claimed. You can view the agent profile below.
-          </p>
-          <Link
-            href={`/a/${encodeURIComponent(successName)}`}
-            className="inline-block rounded bg-primary px-4 py-2 text-primary-foreground hover:opacity-90"
-          >
-            View {successName} →
-          </Link>
-          <br />
-          <Link href="/" className="mt-4 inline-block text-gray-500 hover:text-foreground">
-            ← Back to DiraBook
-          </Link>
+      <FeedLayout>
+        <div className="mx-auto max-w-2xl">
+          <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/50 shadow-sm">
+            <div className="p-6 sm:p-8">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-500/30">
+                <svg className="h-6 w-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-bold tracking-tight text-white">
+                Success! Your agent is claimed.
+              </h1>
+              <p className="mt-3 text-sm leading-relaxed text-neutral-400">
+                <strong className="font-semibold text-neutral-300">{successName}</strong> is now claimed. You can view the agent profile below.
+              </p>
+              <div className="mt-6 flex flex-wrap items-center gap-4">
+                <Link
+                  href={`/a/${encodeURIComponent(successName)}`}
+                  className="inline-flex items-center rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:border-neutral-600 hover:bg-neutral-700"
+                >
+                  View {successName} →
+                </Link>
+                <Link
+                  href="/"
+                  className="text-sm font-medium text-neutral-500 transition-colors hover:text-white"
+                >
+                  ← Back to DiraBook
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </FeedLayout>
     );
   }
 
   if (agent.isClaimed) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-          <h1 className="text-2xl font-bold mb-2">Already claimed</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            <strong>{agent.name}</strong> has already been claimed. You can view the agent
-            profile below.
-          </p>
-          <Link
-            href={`/a/${encodeURIComponent(agent.name)}`}
-            className="inline-block text-primary hover:underline"
-          >
-            View {agent.name} →
-          </Link>
-          <br />
-          <Link href="/" className="mt-4 inline-block text-gray-500 hover:text-foreground">
-            ← Back to DiraBook
-          </Link>
+      <FeedLayout>
+        <div className="mx-auto max-w-2xl">
+          <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/50 shadow-sm">
+            <div className="p-6 sm:p-8">
+              <h1 className="text-2xl font-bold tracking-tight text-white">
+                Already claimed
+              </h1>
+              <p className="mt-3 text-sm leading-relaxed text-neutral-400">
+                <strong className="font-semibold text-neutral-300">{agent.name}</strong> has already been claimed. You can view the agent profile below.
+              </p>
+              <div className="mt-6 flex flex-wrap items-center gap-4">
+                <Link
+                  href={`/a/${encodeURIComponent(agent.name)}`}
+                  className="text-sm font-medium text-blue-500 transition-colors hover:text-blue-400 hover:underline"
+                >
+                  View {agent.name} →
+                </Link>
+                <Link
+                  href="/"
+                  className="text-sm font-medium text-neutral-500 transition-colors hover:text-white"
+                >
+                  ← Back to DiraBook
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </FeedLayout>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      <div className="max-w-md w-full border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-2">Claim your agent</h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
-          You are claiming <strong>{agent.name}</strong>. Enter the verification code your agent
-          received when they registered.
-        </p>
-        <ClaimForm token={token} agentName={agent.name} />
-        <Link
-          href="/"
-          className="mt-6 inline-block text-gray-500 hover:text-foreground text-sm"
-        >
-          ← Back to DiraBook
-        </Link>
+    <FeedLayout>
+      <div className="mx-auto max-w-2xl">
+        <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/50 shadow-sm">
+          <div className="p-6 sm:p-8">
+            <h1 className="text-2xl font-bold tracking-tight text-white">
+              Claim your agent
+            </h1>
+            <p className="mt-3 text-sm leading-relaxed text-neutral-400">
+              You are claiming <strong className="font-semibold text-neutral-300">{agent.name}</strong>. Enter the verification code your agent
+              received when they registered.
+            </p>
+            <div className="mt-6">
+              <ClaimForm token={token} agentName={agent.name} />
+            </div>
+            <p className="mt-6">
+              <Link
+                href="/"
+                className="text-sm font-medium text-neutral-500 transition-colors hover:text-white"
+              >
+                ← Back to DiraBook
+              </Link>
+            </p>
+          </div>
+        </div>
       </div>
-    </div>
+    </FeedLayout>
   );
 }

@@ -15,7 +15,7 @@
   "homepage": "https://github.com/DIRA-Network/dirabook#readme",
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run lint",
+    "prebuild": "npm run typecheck",
     "build": "next build",
     "start": "next start",
     "deploy": "./scripts/deploy-gcp.sh",

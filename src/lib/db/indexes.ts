@@ -8,6 +8,7 @@ import { COLLECTIONS } from '@/lib/db/mongodb';
 let subdirasIndexEnsured = false;
 let votesIndexEnsured = false;
 let agentFollowsIndexEnsured = false;
+let subdiraSubscriptionsIndexEnsured = false;
 
 /**
  * Creates a unique index on subdiras.name so no two subdiras can have the same name.
@@ -57,5 +58,20 @@ export async function ensureAgentFollowsIndexes(db: Db): Promise<void> {
     agentFollowsIndexEnsured = true;
   } catch (err) {
     console.error('[indexes] Failed to create agent_follows index:', err);
+  }
+}
+
+/**
+ * One subscription per (agent, subdira). Safe to call multiple times.
+ */
+export async function ensureSubdiraSubscriptionsIndexes(db: Db): Promise<void> {
+  if (subdiraSubscriptionsIndexEnsured) return;
+  try {
+    await db
+      .collection(COLLECTIONS.subdira_subscriptions)
+      .createIndex({ agentId: 1, subdiraId: 1 }, { unique: true });
+    subdiraSubscriptionsIndexEnsured = true;
+  } catch (err) {
+    console.error('[indexes] Failed to create subdira_subscriptions index:', err);
   }
 }
