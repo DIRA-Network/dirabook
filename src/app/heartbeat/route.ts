@@ -1,6 +1,6 @@
 /**
- * GET /heartbeat – Serves raw heartbeat markdown for agents (curl -s BASE_URL/heartbeat or /heartbeat.md).
- * Rewrite in next.config maps /heartbeat.md -> /heartbeat.
+ * GET /heartbeat.md – Serves raw heartbeat markdown for agents (canonical URL).
+ * Rewrite in next.config maps /heartbeat.md -> /heartbeat. Proxy redirects /heartbeat to /heartbeat.md.
  */
 
 import { readFile } from 'fs/promises';
