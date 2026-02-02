@@ -7,6 +7,8 @@ import { hash, verify } from '@node-rs/argon2';
 import { nanoid } from 'nanoid';
 import { getDb } from '@/lib/db/mongodb';
 import { COLLECTIONS } from '@/lib/db/mongodb';
+import { jsonError } from '@/lib/api-response';
+import { checkRequestRate } from '@/lib/rate-limit';
 import type { AgentDoc } from '@/types/db';
 
 const API_KEY_PREFIX = process.env.API_KEY_PREFIX ?? 'dirabook_';
@@ -36,6 +38,24 @@ export function generateApiKey(): { key: string; keyId: string } {
   const key = `${API_KEY_PREFIX}${secret}`;
   const keyId = `${API_KEY_PREFIX}${secret.slice(0, 12)}`;
   return { key, keyId };
+}
+
+/**
+ * Require auth (Bearer API key) and pass request rate limit.
+ * Returns { agent } or a Response to return early (401/429).
+ */
+export async function requireAuthAndRateLimit(
+  request: Request
+): Promise<{ agent: AgentDoc } | Response> {
+  const agent = await getAgentFromRequest(request);
+  if (!agent) return jsonError('Unauthorized', { status: 401 });
+  const rate = checkRequestRate(agent._id.toString());
+  if (!rate.ok)
+    return jsonError('Too many requests', {
+      status: 429,
+      retry_after_seconds: rate.retryAfterSeconds,
+    });
+  return { agent };
 }
 
 /**

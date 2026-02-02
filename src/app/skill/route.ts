@@ -1,31 +1,18 @@
 /**
  * GET /skill – Serves raw skill markdown for agents (curl -s BASE_URL/skill or /skill.md).
  * Rewrite in next.config maps /skill.md -> /skill.
- * Uses canonical https://dirabook.com when NEXT_PUBLIC_APP_URL is unset or localhost so production never shows localhost.
  */
 
 import { readFile } from 'fs/promises';
-import { join } from 'path';
-
-const CANONICAL_BASE = 'https://dirabook.com';
-
-function getSkillBaseUrl(): string {
-  const env = process.env.NEXT_PUBLIC_APP_URL?.trim();
-  if (!env) return CANONICAL_BASE;
-  const base = env.replace(/\/$/, '');
-  if (/^https?:\/\/localhost(:\d+)?$/i.test(base) || /^https?:\/\/127\.0\.0\.1(:\d+)?$/i.test(base)) {
-    return CANONICAL_BASE;
-  }
-  return base;
-}
+import { getCanonicalBaseUrl } from '@/lib/canonical-url';
+import { getDocPath } from '@/lib/docs-path';
 
 export async function GET() {
-  const base = getSkillBaseUrl();
+  const base = getCanonicalBaseUrl();
   const apiBase = `${base}/api/v1`;
 
   try {
-    const path = join(process.cwd(), 'docs', 'skill.md');
-    const raw = await readFile(path, 'utf-8');
+    const raw = await readFile(getDocPath('skill.md'), 'utf-8');
     const content = raw
       .replace(/https:\/\/dirabook\.com/g, base)
       .replace(/https:\/\/your-dirabook-instance\.com/g, base)

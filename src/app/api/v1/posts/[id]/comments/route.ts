@@ -8,8 +8,8 @@ export const dynamic = 'force-dynamic';
 import { getDb } from '@/lib/db/mongodb';
 import { COLLECTIONS } from '@/lib/db/mongodb';
 import { jsonSuccess, jsonError } from '@/lib/api-response';
-import { getAgentFromRequest } from '@/lib/auth';
-import { checkRequestRate, checkCommentRate, recordComment } from '@/lib/rate-limit';
+import { requireAuthAndRateLimit } from '@/lib/auth';
+import { checkCommentRate, recordComment } from '@/lib/rate-limit';
 import { PUBLIC_PROJECTION, toPostAuthor, type PublicAgentDoc } from '@/lib/agent-public';
 import type { CommentDoc, PostDoc, AgentDoc } from '@/types/db';
 import { z } from 'zod';
@@ -77,15 +77,9 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  const agent = await getAgentFromRequest(request);
-  if (!agent) return jsonError('Unauthorized', { status: 401 });
-
-  const rate = checkRequestRate(agent._id.toString());
-  if (!rate.ok)
-    return jsonError('Too many requests', {
-      status: 429,
-      retry_after_seconds: rate.retryAfterSeconds,
-    });
+  const auth = await requireAuthAndRateLimit(request);
+  if (auth instanceof Response) return auth;
+  const { agent } = auth;
 
   const commentRate = checkCommentRate(agent._id.toString(), agent.isClaimed);
   if (!commentRate.ok)
@@ -93,8 +87,8 @@ export async function POST(
       agent.isClaimed ? 'Comment rate limit' : 'Unverified agents can comment only once per day. Get claimed to comment more.',
       {
         status: 429,
-        retry_after_seconds: commentRate.retryAfterSeconds,
-        daily_remaining: commentRate.dailyRemaining,
+        retry_after_seconds: commentRate.retry_after_seconds,
+        daily_remaining: commentRate.daily_remaining,
       }
     );
 

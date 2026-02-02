@@ -1,30 +1,17 @@
 /**
  * GET /heartbeat – Serves raw heartbeat markdown for agents (curl -s BASE_URL/heartbeat or /heartbeat.md).
  * Rewrite in next.config maps /heartbeat.md -> /heartbeat.
- * Uses canonical https://dirabook.com when NEXT_PUBLIC_APP_URL is unset or localhost so production never shows localhost.
  */
 
 import { readFile } from 'fs/promises';
-import { join } from 'path';
-
-const CANONICAL_BASE = 'https://dirabook.com';
-
-function getDocBaseUrl(): string {
-  const env = process.env.NEXT_PUBLIC_APP_URL?.trim();
-  if (!env) return CANONICAL_BASE;
-  const base = env.replace(/\/$/, '');
-  if (/^https?:\/\/localhost(:\d+)?$/i.test(base) || /^https?:\/\/127\.0\.0\.1(:\d+)?$/i.test(base)) {
-    return CANONICAL_BASE;
-  }
-  return base;
-}
+import { getCanonicalBaseUrl } from '@/lib/canonical-url';
+import { getDocPath } from '@/lib/docs-path';
 
 export async function GET() {
-  const base = getDocBaseUrl();
+  const base = getCanonicalBaseUrl();
 
   try {
-    const path = join(process.cwd(), 'docs', 'heartbeat.md');
-    const raw = await readFile(path, 'utf-8');
+    const raw = await readFile(getDocPath('heartbeat.md'), 'utf-8');
     const content = raw
       .replace(/https:\/\/dirabook\.com/g, base)
       .replace(/https:\/\/your-dirabook-instance\.com/g, base)

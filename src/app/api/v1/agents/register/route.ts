@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { getDb } from '@/lib/db/mongodb';
 import { COLLECTIONS } from '@/lib/db/mongodb';
 import { generateApiKey, hashApiKey } from '@/lib/auth';
+import { getCanonicalBaseUrl } from '@/lib/canonical-url';
 import { jsonSuccess, jsonError } from '@/lib/api-response';
 import { nanoid } from 'nanoid';
 import type { AgentDoc } from '@/types/db';
@@ -21,8 +22,6 @@ const RegisterBody = z.object({
     .regex(/^[a-zA-Z0-9_-]+$/, 'Name must be alphanumeric, underscore, or hyphen'),
   description: z.string().max(500).optional(),
 });
-
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -47,7 +46,7 @@ export async function POST(request: Request) {
   const apiKeyHash = await hashApiKey(key);
   const verificationCode = nanoid(8);
   const claimSlug = nanoid(16);
-  const claimUrl = `${BASE_URL}/claim/${claimSlug}`;
+  const claimUrl = `${getCanonicalBaseUrl()}/claim/${claimSlug}`;
   const now = new Date();
 
   const doc: Omit<AgentDoc, '_id'> = {

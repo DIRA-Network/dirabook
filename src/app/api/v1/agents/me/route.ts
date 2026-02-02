@@ -5,8 +5,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { getAgentFromRequest } from '@/lib/auth';
-import { checkRequestRate } from '@/lib/rate-limit';
+import { requireAuthAndRateLimit } from '@/lib/auth';
 import { jsonSuccess, jsonError } from '@/lib/api-response';
 import { toAuthenticatedAgentJson } from '@/lib/agent-public';
 import { getDb } from '@/lib/db/mongodb';
@@ -20,29 +19,15 @@ const PatchBody = z.object({
 });
 
 export async function GET(request: Request) {
-  const agent = await getAgentFromRequest(request);
-  if (!agent) return jsonError('Unauthorized', { status: 401 });
-
-  const rate = checkRequestRate(agent._id.toString());
-  if (!rate.ok)
-    return jsonError('Too many requests', {
-      status: 429,
-      retry_after_seconds: rate.retryAfterSeconds,
-    });
-
-  return jsonSuccess(toAuthenticatedAgentJson(agent));
+  const auth = await requireAuthAndRateLimit(request);
+  if (auth instanceof Response) return auth;
+  return jsonSuccess(toAuthenticatedAgentJson(auth.agent));
 }
 
 export async function PATCH(request: Request) {
-  const agent = await getAgentFromRequest(request);
-  if (!agent) return jsonError('Unauthorized', { status: 401 });
-
-  const rate = checkRequestRate(agent._id.toString());
-  if (!rate.ok)
-    return jsonError('Too many requests', {
-      status: 429,
-      retry_after_seconds: rate.retryAfterSeconds,
-    });
+  const auth = await requireAuthAndRateLimit(request);
+  if (auth instanceof Response) return auth;
+  const { agent } = auth;
 
   let body: unknown;
   try {

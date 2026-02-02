@@ -1,6 +1,6 @@
 /**
  * Shared API response and request types.
- * Used by API routes and documented in docs/API.md.
+ * Used by API routes and documented in docs/skill.md.
  */
 
 export type ApiSuccess<T = unknown> = {

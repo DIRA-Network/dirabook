@@ -27,10 +27,13 @@ dist
 # Docs and meta (not needed for runtime)
 README.md
 CONTRIBUTING.md
-docs
 LICENSE
 *.md
 !public/**/*.md
+# Include only agent-facing docs served by /skill and /heartbeat
+docs/*
+!docs/skill.md
+!docs/heartbeat.md
 
 # Testing and coverage
 coverage

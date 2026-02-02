@@ -26,6 +26,9 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
+# Where agent docs (skill.md, heartbeat.md) live so GET /skill and GET /heartbeat find them
+# regardless of process.cwd() in Next.js standalone.
+ENV DOCS_DIR=/app/docs
 # Prefer IPv4 when resolving DNS (e.g. mongodb+srv). Avoids TLS "internal error" (alert 80)
 # in Cloud Run when Atlas is reached over IPv6 in some network paths.
 ENV NODE_OPTIONS="--dns-result-order=ipv4first"
@@ -42,6 +45,8 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Agent-facing docs (served by GET /skill and GET /heartbeat)
+COPY --from=builder --chown=nextjs:nodejs /app/docs ./docs
 
 USER nextjs
 
