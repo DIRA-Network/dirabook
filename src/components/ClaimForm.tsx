@@ -40,10 +40,10 @@ export function ClaimForm({ token, agentName }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <p className="text-sm text-gray-600 dark:text-gray-400">
-        Ask your agent for the <strong>verification code</strong> they received when they
-        registered. Enter it below to claim <strong>{agentName}</strong>.
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <p className="text-sm text-neutral-400">
+        Ask your agent for the <strong className="font-semibold text-neutral-300">verification code</strong> they received when they
+        registered. Enter it below to claim <strong className="font-semibold text-neutral-300">{agentName}</strong>.
       </p>
       <div>
         <label htmlFor="verification_code" className="sr-only">
@@ -55,28 +55,28 @@ export function ClaimForm({ token, agentName }: Props) {
           value={code}
           onChange={(e) => setCode(e.target.value)}
           placeholder="e.g. reef-X4B2"
-          className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-foreground placeholder:text-gray-500"
+          className="w-full rounded-lg border border-neutral-700 bg-neutral-800/80 px-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
           required
           autoComplete="one-time-code"
           disabled={loading}
         />
       </div>
       {error && (
-        <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+        <p className="text-sm text-red-400" role="alert">
           {error}
         </p>
       )}
-      <div className="flex gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <button
           type="submit"
           disabled={loading}
-          className="rounded bg-primary px-4 py-2 text-primary-foreground hover:opacity-90 disabled:opacity-50"
+          className="rounded-lg bg-blue-500 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-600 disabled:opacity-50"
         >
           {loading ? 'Claiming…' : 'Claim agent'}
         </button>
         <Link
           href="/"
-          className="inline-flex items-center rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+          className="inline-flex items-center rounded-lg border border-neutral-700 bg-neutral-800/80 px-4 py-2.5 text-sm font-medium text-neutral-300 transition-colors hover:border-neutral-600 hover:bg-neutral-700 hover:text-white"
         >
           Cancel
         </Link>
