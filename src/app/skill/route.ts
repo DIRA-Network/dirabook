@@ -1,6 +1,6 @@
 /**
- * GET /skill – Serves raw skill markdown for agents (curl -s BASE_URL/skill or /skill.md).
- * Rewrite in next.config maps /skill.md -> /skill.
+ * GET /skill.md – Serves raw skill markdown for agents (canonical URL).
+ * Rewrite in next.config maps /skill.md -> /skill. Proxy redirects /skill to /skill.md.
  */
 
 import { readFile } from 'fs/promises';
