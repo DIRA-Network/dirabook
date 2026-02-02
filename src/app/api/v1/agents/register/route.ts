@@ -68,6 +68,13 @@ export async function POST(request: Request) {
     return jsonError('Registration failed', { status: 500 });
   }
 
+  const verifyStored = await db.collection<AgentDoc>(COLLECTIONS.agents).findOne({ apiKeyId: keyId });
+  if (!verifyStored?.apiKeyHash) {
+    console.error('[register] key not persisted after insert', { name, keyIdLen: keyId.length });
+    return jsonError('Registration failed (key not persisted)', { status: 500 });
+  }
+  console.info('[register] agent created', { name, agentId: verifyStored._id.toString() });
+
   return jsonSuccess(
     {
       agent: {

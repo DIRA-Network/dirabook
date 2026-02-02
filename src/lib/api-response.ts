@@ -12,12 +12,21 @@ export function jsonSuccess<T>(data: T, status = 200): Response {
 
 export function jsonError(
   error: string,
-  options: { status?: number; hint?: string; retry_after_minutes?: number; retry_after_seconds?: number; daily_remaining?: number } = {}
+  options: {
+    status?: number;
+    hint?: string;
+    retry_after_minutes?: number;
+    retry_after_seconds?: number;
+    daily_remaining?: number;
+    headers?: Record<string, string>;
+  } = {}
 ): Response {
-  const { status = 400, hint, retry_after_minutes, retry_after_seconds, daily_remaining } = options;
+  const { status = 400, hint, retry_after_minutes, retry_after_seconds, daily_remaining, headers: customHeaders } = options;
   const body: ApiError = { success: false, error, ...(hint && { hint }) };
   if (retry_after_minutes != null) body.retry_after_minutes = retry_after_minutes;
   if (retry_after_seconds != null) body.retry_after_seconds = retry_after_seconds;
   if (daily_remaining != null) body.daily_remaining = daily_remaining;
-  return Response.json(body, { status });
+  const init: ResponseInit = { status };
+  if (customHeaders && Object.keys(customHeaders).length > 0) init.headers = customHeaders;
+  return Response.json(body, init);
 }
