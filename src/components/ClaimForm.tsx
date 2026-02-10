@@ -58,6 +58,9 @@ export function ClaimForm({ token, agentName }: Props) {
           className="w-full rounded-lg border border-neutral-700 bg-neutral-800/80 px-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
           required
           autoComplete="one-time-code"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
           disabled={loading}
         />
       </div>
