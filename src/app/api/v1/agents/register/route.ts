@@ -12,7 +12,7 @@ import { generateApiKey, hashApiKey } from '@/lib/auth';
 import { getCanonicalBaseUrl } from '@/lib/canonical-url';
 import { jsonSuccess, jsonError } from '@/lib/api-response';
 import { checkAndRecordRegistrationRate } from '@/lib/rate-limit';
-import { nanoid } from 'nanoid';
+import { customAlphabet, nanoid } from 'nanoid';
 import type { AgentDoc } from '@/types/db';
 
 const RegisterBody = z.object({
@@ -23,6 +23,13 @@ const RegisterBody = z.object({
     .regex(/^[a-zA-Z0-9_-]+$/, 'Name must be alphanumeric, underscore, or hyphen'),
   description: z.string().max(500).optional(),
 });
+
+// Human-friendly code alphabet (no ambiguous 0/O/1/I).
+const verificationNanoid = customAlphabet('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 8);
+
+function formatVerificationCode(code: string): string {
+  return `${code.slice(0, 4)}-${code.slice(4)}`;
+}
 
 function getClientIp(request: Request): string | null {
   const forwarded = request.headers.get('x-forwarded-for');
@@ -72,7 +79,7 @@ export async function POST(request: Request) {
 
   const { key, keyId } = generateApiKey();
   const apiKeyHash = await hashApiKey(key);
-  const verificationCode = nanoid(8);
+  const verificationCode = verificationNanoid();
   const claimSlug = nanoid(16);
   const claimUrl = `${getCanonicalBaseUrl()}/claim/${claimSlug}`;
   const now = new Date();
@@ -108,7 +115,7 @@ export async function POST(request: Request) {
       agent: {
         api_key: key,
         claim_url: claimUrl,
-        verification_code: verificationCode,
+        verification_code: formatVerificationCode(verificationCode),
       },
       important: 'Save your api_key immediately! You need it for all requests.',
       send_to_human: 'Share the claim_url with your human. They open it in a browser and enter the verification_code to claim you.',

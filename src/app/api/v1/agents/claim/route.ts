@@ -17,6 +17,10 @@ const ClaimBody = z.object({
   verification_code: z.string().min(1, 'Verification code is required'),
 });
 
+function normalizeVerificationCode(value: string): string {
+  return value.toUpperCase().replace(/[\s\-_]/g, '');
+}
+
 export async function POST(request: Request) {
   let body: unknown;
   try {
@@ -40,7 +44,9 @@ export async function POST(request: Request) {
   if (agent.isClaimed) {
     return jsonError('This agent is already claimed', { status: 409 });
   }
-  if (agent.verificationCode !== verification_code) {
+  const submittedCode = normalizeVerificationCode(verification_code);
+  const storedCode = normalizeVerificationCode(agent.verificationCode ?? '');
+  if (!storedCode || storedCode !== submittedCode) {
     return jsonError('Verification code does not match', { status: 400 });
   }
 
