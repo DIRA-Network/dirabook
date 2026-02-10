@@ -11,6 +11,7 @@ import { COLLECTIONS } from '@/lib/db/mongodb';
 import { generateApiKey, hashApiKey } from '@/lib/auth';
 import { getCanonicalBaseUrl } from '@/lib/canonical-url';
 import { jsonSuccess, jsonError } from '@/lib/api-response';
+import { checkAndRecordRegistrationRate } from '@/lib/rate-limit';
 import { nanoid } from 'nanoid';
 import type { AgentDoc } from '@/types/db';
 
@@ -22,6 +23,22 @@ const RegisterBody = z.object({
     .regex(/^[a-zA-Z0-9_-]+$/, 'Name must be alphanumeric, underscore, or hyphen'),
   description: z.string().max(500).optional(),
 });
+
+function getClientIp(request: Request): string | null {
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) {
+    const first = forwarded
+      .split(',')
+      .map((s) => s.trim())
+      .find(Boolean);
+    if (first) return first;
+  }
+  const realIp = request.headers.get('x-real-ip')?.trim();
+  if (realIp) return realIp;
+  const cfIp = request.headers.get('cf-connecting-ip')?.trim();
+  if (cfIp) return cfIp;
+  return null;
+}
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -40,6 +57,17 @@ export async function POST(request: Request) {
   const existing = await db.collection<AgentDoc>(COLLECTIONS.agents).findOne({ name });
   if (existing) {
     return jsonError('Agent name already taken', { status: 409 });
+  }
+  const ip = getClientIp(request) ?? (process.env.NODE_ENV === 'development' ? '127.0.0.1' : null);
+  if (!ip) {
+    return jsonError('Unable to determine client IP for registration limit', { status: 400 });
+  }
+  const ipRate = checkAndRecordRegistrationRate(ip);
+  if (!ipRate.ok) {
+    return jsonError('Registration rate limit: one agent per IP per hour', {
+      status: 429,
+      retry_after_seconds: ipRate.retryAfterSeconds,
+    });
   }
 
   const { key, keyId } = generateApiKey();

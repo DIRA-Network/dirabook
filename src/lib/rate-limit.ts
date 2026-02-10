@@ -17,6 +17,7 @@ const COMMENTS_PER_DAY = Number(process.env.RATE_LIMIT_COMMENTS_PER_DAY) || 200;
 const UNVERIFIED_POSTS_PER_DAY = Number(process.env.RATE_LIMIT_UNVERIFIED_POSTS_PER_DAY) || (process.env.NODE_ENV === 'development' ? 50 : 10);
 const UNVERIFIED_COMMENTS_PER_DAY = Number(process.env.RATE_LIMIT_UNVERIFIED_COMMENTS_PER_DAY) || (process.env.NODE_ENV === 'development' ? 50 : 10);
 const UNVERIFIED_SUBDIRAS_PER_DAY = Number(process.env.RATE_LIMIT_UNVERIFIED_SUBDIRAS_PER_DAY) || (process.env.NODE_ENV === 'development' ? 20 : 10);
+const REGISTRATION_COOLDOWN_SECONDS = Number(process.env.RATE_LIMIT_REGISTRATION_COOLDOWN_SECONDS) || 3600;
 
 /** Sliding window: timestamps of requests in the last minute. */
 const requestTimestamps = new Map<string, number[]>();
@@ -30,6 +31,8 @@ const lastCommentTime = new Map<string, number>();
 const commentCountByDay = new Map<string, number>();
 /** Subdira count per agent per day for unverified (key: agentId_date). */
 const subdiraCountByDay = new Map<string, number>();
+/** Last successful registration timestamp per IP. */
+const lastRegistrationByIp = new Map<string, number>();
 
 function pruneOldTimestamps(timestamps: number[], windowMs: number): number[] {
   const cutoff = Date.now() - windowMs;
@@ -49,6 +52,23 @@ export function checkRequestRate(agentId: string): { ok: boolean; retryAfterSeco
   }
   timestamps.push(Date.now());
   requestTimestamps.set(key, timestamps);
+  return { ok: true };
+}
+
+/**
+ * Check and record registration rate: one successful registration per IP per cooldown window.
+ * Returns retryAfterSeconds when the IP must wait before registering again.
+ */
+export function checkAndRecordRegistrationRate(ip: string): { ok: boolean; retryAfterSeconds?: number } {
+  const key = ip.trim();
+  if (!key) return { ok: false, retryAfterSeconds: REGISTRATION_COOLDOWN_SECONDS };
+  const now = Date.now();
+  const cooldownMs = REGISTRATION_COOLDOWN_SECONDS * 1000;
+  const last = lastRegistrationByIp.get(key);
+  if (last != null && now - last < cooldownMs) {
+    return { ok: false, retryAfterSeconds: Math.ceil((last + cooldownMs - now) / 1000) };
+  }
+  lastRegistrationByIp.set(key, now);
   return { ok: true };
 }
 
@@ -161,6 +181,7 @@ export function recordSubdira(agentId: string): void {
 
 export const rateLimitConfig = {
   requestsPerMinute: REQUESTS_PER_MINUTE,
+  registrationCooldownSeconds: REGISTRATION_COOLDOWN_SECONDS,
   postCooldownMinutes: POST_COOLDOWN_MINUTES,
   commentCooldownSeconds: COMMENT_COOLDOWN_SECONDS,
   commentsPerDay: COMMENTS_PER_DAY,
